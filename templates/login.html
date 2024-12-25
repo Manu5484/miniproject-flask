@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %} 
+Login
+{% endblock %}
+
+{% block main %}
+  <div class="container">
+    <h1>User Login</h1>
+    <br>
+    <form method="POST" class="form-register" style="color: white;">
+      {{form.hidden_tag()}}
+      {{form.user_name.label()}}
+      {{form.user_name(class="form-control", placeholder="user name")}}
+      {{form.password.label()}}
+      {{form.password(class="form-control", placeholder="password")}}
+      <br>
+      {{form.submit(class="btn btn-lg btn-block btn-primary")}}
+      <span>Dont have an account?</span><a href="{{url_for('registerpage')}}">register</a>
+    </form>
+  </div>
+{% endblock %}

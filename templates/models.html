@@ -1,0 +1,42 @@
+<div class="modal fade"  id="exampleModal-{{el.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background-color: rgb(78, 78, 79);">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Item details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {{el.name}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade"  id="purchaseModal-{{el.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="background-color: rgb(78, 78, 79);">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Item details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {{ purchaseform.hidden_tag() }}
+          <h3>Sure! you want to purchase this item</h3>
+          <input type="hidden" id="purchased_item" name="purchased_item" value={{el.id}}>
+          {{purchaseform.submit(class="btn btn-success btn-block")}}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

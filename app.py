@@ -1,10 +1,10 @@
-from flask import Flask, render_template,redirect,url_for,flash
+from flask import Flask, render_template,redirect,url_for,flash,request
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField,SubmitField
 from wtforms.validators import Length,Email,EqualTo,DataRequired,ValidationError
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager,login_user,UserMixin
+from flask_login import LoginManager,login_user,UserMixin,logout_user,login_required,current_user
 import os
 secret_key = os.urandom(24).hex()  
 
@@ -15,10 +15,12 @@ app.config['SECRET_KEY'] = 'secret_key'
 bcrypt=Bcrypt(app)
 db = SQLAlchemy(app)
 login_manager=LoginManager(app)
+login_manager.login_view="loginpage"
+login_manager.login_message_category='info'
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.get(int(user_id))
+    return db.session.get(Users, int(user_id))
 
 @app.route('/')
 @app.route('/home')
@@ -45,6 +47,9 @@ class Users(db.Model,UserMixin):
     def check_password(self,attempted_password):
         return bcrypt.check_password_hash(self.password_hash,attempted_password)
     
+    def can_purchase(self,item_price):
+        return self.budget>=item_price
+    
 class Items(db.Model):
     __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
@@ -66,10 +71,26 @@ def assign_owner():
     
     return "User or Item not found."
 
-@app.route('/market')
+@app.route('/market',methods=['POST','GET'])
+@login_required
 def marketpage():
-    items = Items.query.all()  
-    return render_template('market.html', item=items)  
+    purchaseform=Purchaseform()
+    if request.method == "POST":
+        purchased_item=request.form.get('purchased_item')
+        purchased_object=Items.query.filter_by(id=purchased_item).first()
+        if purchased_object:
+            if current_user.can_purchase(purchased_object.price):
+                purchased_object.owner=current_user.id
+                current_user.budget -=purchased_object.price
+                db.session.commit()
+                flash ("item purchased successfully ",category='success')
+            # return redirect(url_for('marketpage'))
+            else:
+                flash("Insuffcient balance !",category='danger')
+        return redirect(url_for('marketpage'))
+    if request.method == "GET":
+        items = Items.query.filter_by(owner=None) 
+        return render_template('market.html', item=items , purchaseform=purchaseform)
 
 class Registerform(FlaskForm):
     def validate_user_name(self,form_user_name):
@@ -95,6 +116,8 @@ def registerpage():
         temp_user=Users(user_name=form.user_name.data,email=form.email.data,password=form.password1.data)
         db.session.add(temp_user)
         db.session.commit()
+        login_user(temp_user)
+        flash('loggedin successfully',category='success')
         return redirect(url_for('marketpage'))
     if form.errors!={}:
         for err_msg in form.errors.values():
@@ -105,6 +128,12 @@ class Loginform(FlaskForm):
     user_name=StringField(label='user name',validators=[DataRequired()])
     password=PasswordField(label='password',validators=[DataRequired()])
     submit=SubmitField(label='login')
+
+class Purchaseform(FlaskForm):
+    submit=SubmitField(label='Purchase Item')
+
+class Sellform(FlaskForm):
+    submit=SubmitField(label='Sell Item')
 
 @app.route('/login',methods=['GET','POST'])  
 def loginpage():
@@ -118,6 +147,12 @@ def loginpage():
         else:
             flash('invaild user_name and password',category='danger')
     return render_template('login.html',form=form)  
+
+@app.route('/logout',methods=['GET','POST'])
+def logoutpage():
+    logout_user()
+    flash("you have logged out !", category='info')
+    return redirect (url_for('homepage'))
 
 if __name__ == '__main__':
     app.run(debug=True)

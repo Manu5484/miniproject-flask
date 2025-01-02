@@ -41,6 +41,21 @@
   </div>
   <div class="col-4">
     <h2 style="padding: 5px 50px 5px 0px;">Items Owned</h2>
+    <div class="row">
+      {% for owned_item in owned_items%}
+      {% include "./models1.html" %}
+      <div style="margin-bottom: 5px" class="card text-center bg-dark">
+        <div class="card-body">
+            <h5 class="card-title">{{owned_item.name}}</h5>
+            <button type="button" class="btn btn-outline-danger" style="margin-bottom: 5px"
+                    data-toggle="modal" data-target="#sellModal-{{owned_item.id}}">
+                Sell this Item
+            </button>
+            <p class="card-text"><strong>{{owned_item.price}}</strong></p>
+        </div>
+      </div>
+      {%endfor%}
+    </div>
   </div>
 </div>
   

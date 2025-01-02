@@ -75,6 +75,7 @@ def assign_owner():
 @login_required
 def marketpage():
     purchaseform=Purchaseform()
+    sellform=Sellform()
     if request.method == "POST":
         purchased_item=request.form.get('purchased_item')
         purchased_object=Items.query.filter_by(id=purchased_item).first()
@@ -87,10 +88,21 @@ def marketpage():
             # return redirect(url_for('marketpage'))
             else:
                 flash("Insuffcient balance !",category='danger')
+        sell_itm=request.form.get('sell_item')
+        sell_item_obj=Items.query.filter_by(id=sell_itm).first()
+        if sell_item_obj:
+            if sell_item_obj.owner==current_user.id:
+                sell_item_obj.owner=None
+                current_user.budget+=sell_item_obj.price
+                db.session.commit()
+                flash("successfully saled ",category='success')
+            else:
+                flash("something went wrong",category='danger')
         return redirect(url_for('marketpage'))
     if request.method == "GET":
         items = Items.query.filter_by(owner=None) 
-        return render_template('market.html', item=items , purchaseform=purchaseform)
+        owned_items=Items.query.filter_by(owner=current_user.id)
+        return render_template('market.html', item=items , purchaseform=purchaseform , owned_items=owned_items,sellform=sellform)
 
 class Registerform(FlaskForm):
     def validate_user_name(self,form_user_name):

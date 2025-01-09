@@ -59,17 +59,17 @@ class Items(db.Model):
     owner = db.Column(db.Integer, db.ForeignKey('users.id'))
 
    
-@app.route('/assign_owner')
-def assign_owner():
-    user = Users.query.first() 
-    item = Items.query.first()  
+# @app.route('/assign_owner')
+# def assign_owner():
+#     user = Users.query.first() 
+#     item = Items.query.first()  
 
-    if user and item:  
-        item.owner = user.id  
-        db.session.commit() 
-        return f"Owner assigned: {user.user_name} is now the owner of {item.name}."
+#     if user and item:  
+#         item.owner = user.id  
+#         db.session.commit() 
+#         return f"Owner assigned: {user.user_name} is now the owner of {item.name}."
     
-    return "User or Item not found."
+#     return "User or Item not found."
 
 @app.route('/market',methods=['POST','GET'])
 @login_required
